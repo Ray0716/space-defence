@@ -1,0 +1,890 @@
+import math
+import random
+import time
+
+import pygame
+from pygame import mixer
+
+# initialize pygame
+pygame.init()
+# screen initialization
+screen = pygame.display.set_mode((1200, 800))
+explosion = pygame.image.load("explosion.png")
+blast = pygame.image.load("blast.png")
+
+# bckgrd
+
+# background = pygame.image.load("output-onlinepngtools.png")
+# pspeed = 2
+# aspeed = 1
+# aspeed2 = 1
+levelupp = True
+level_value = 0
+pspeed = level_value / 5 + 1.5
+aspeed = level_value / 5 + 1
+aspeed2 = level_value / 5 + 1
+
+playeralive = True
+# over_font = pygame.font.Font('freesansbold.ttf', 64)
+
+# screen caption and logo
+pygame.display.set_caption("SPACE DEFENSE")
+icon = pygame.image.load("battleship.png")
+pygame.display.set_icon(icon)
+
+# player
+playerimg = pygame.image.load("battleship.png")
+player_x = 570
+player_y = 675
+playerx_change = 0
+
+# alien
+
+
+alienimg = (pygame.image.load("Space_invaders_alien.png"))
+alien_x = 100
+alien_y = 0
+alienx_change = (aspeed)
+alieny_change = (0)
+
+# alien2
+
+alienimg2 = (pygame.image.load("imgonline-com-ua-resize-adHccGHC44bilP4c.jpg"))
+alien_x2 = 300
+alien_y2 = 0
+alienx_change2 = aspeed2
+alieny_change2 = 0
+
+# alien3
+
+alienimg23 = (pygame.image.load("imgonline-com-ua-resize-MwF3VOmyIsC72.jpg"))
+alien_x23 = 500
+alien_y23 = 0
+alienx_change23 = aspeed2
+alieny_change23 = 0
+
+# LASER
+
+laserimg = pygame.image.load("laser.png")
+laser_x = 0
+laser_y = 600
+laserx_change = 0
+lasery_change = 12
+laser_fire = "ready"
+# ready and fire stored as str
+# SAT INIT
+if playeralive == True:
+    satimg = pygame.image.load("satellite.png")
+    chooser = random.randint(1, 2)
+    if chooser == 1:
+        sat_x = 40
+        sspeed = random.randint(1, 1)
+    else:
+        sat_x = 1160
+        sspeed = random.randint(-1, -1)
+    sat_y = random.randint(150, 450)
+
+    satx_change = sspeed
+    choosey = random.randint(-3, 1)
+
+    saty_change = choosey / 10
+
+# MENU SCREENS
+howto = pygame.image.load("howtoplay.jpg")
+gameov = pygame.image.load("output-onlinepngtools.png")
+mmenu = pygame.image.load("mainmenu.png")
+
+# GAME OVER
+
+
+score_value = 0
+font = pygame.font.Font("Square.ttf", 32)
+textx = 10
+texty = 10
+leveltxtx = 10
+leveltxty = 70
+livesx = 10
+livesy = 130
+lives_value = 3
+level_value = 0
+
+count = 0
+count1 = 0
+count2 = 0
+count3 = 0
+count4 = 0
+count5 = 0
+count6 = 0
+count7 = 0
+count8 = 0
+count9 = 0
+count10 = 0
+count11 = 0
+count12 = 0
+count13 = 0
+count14 = 0
+count15 = 0
+count16 = 0
+
+
+def loselife():
+    life = font.render("YOU LOST A LIFE", True, (255, 255, 255))
+    screen.blit(life, (450, 400))
+
+
+def mainmenu():
+    title = font.render("SPACE DEFENCE", True, (255, 255, 255))
+    play = font.render("PLAY - P", True, (255, 255, 255))
+    howto = font.render("HOW TO PLAY - H", True, (255, 255, 255))
+    credits = font.render("CREDITS - C", True, (255, 255, 255))
+    screen.blit(title, (515, 275))
+    screen.blit(play, (375, 300))
+    screen.blit(howto, (515, 325))
+    screen.blit(credits, (515, 350))
+
+
+def levelup():
+    levelu = font.render("LEVEL UP", True, (255, 255, 255))
+    screen.blit(levelu, (450, 400))
+
+
+def game_over_text():
+    over_text = font.render("GAME OVER", True, (255, 255, 255))
+    ovv = font.render("PRESS SPACEBAR TO PLAY AGAIN", True, (255, 255, 255))
+    screen.blit(over_text, (515, 350))
+    screen.blit(ovv, (375, 410))
+
+
+def level(x, y):
+    level = font.render("LEVEL : " + str(level_value), True, (255, 255, 255))
+    screen.blit(level, (x, y))
+
+
+def showscore_value(x, y):
+    score = font.render("SCORE : " + str(score_value), True, (255, 255, 255))
+    screen.blit(score, (x, y))
+
+
+def showlives(x, y):
+    lives = font.render("LIVES : " + str(lives_value), True, (255, 255, 255))
+    screen.blit(lives, (x, y))
+
+
+def player(x, y):
+    screen.blit(playerimg, (x, y))
+
+
+def alien(x, y):
+    screen.blit(alienimg, (x, y))
+
+
+def alien2(x, y):
+    screen.blit(alienimg2, (x, y))
+
+
+def alien3(x, y):
+    screen.blit(alienimg23, (x, y))
+
+
+def sat(x, y):
+    screen.blit(satimg, (x, y))
+
+
+def fire(x, y):
+    global laser_fire
+    laser_fire = "fire"
+    screen.blit(laserimg, (x - 18, y + 60))
+
+
+def isCollision(enemyX, enemyY, bulletX, bulletY):
+    distance = math.sqrt(math.pow(enemyX - bulletX, 2) + (math.pow(enemyY - bulletY, 2)))
+    if distance < 30:
+        return True
+    else:
+        return False
+
+
+def isCollisionsat(satX, satY, bulletX, bulletY):
+    distance = math.sqrt(math.pow(satX - bulletX, 2) + (math.pow(satY - bulletY, 2)))
+    if distance < 32:
+        return True
+    else:
+        return False
+
+
+mainmenut = True
+satimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+alienimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+alienimg2 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+alienimg23 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+alien_x = 100
+alien_y = 0
+alien_x2 = 300
+alien_y2 = 0
+alien_x23 = 500
+alien_y23 = 0
+lives_value = 3
+# MAIN GAME LOOP
+running = True
+while running:
+
+    if mainmenut == False:
+        screen.fill((0, 0, 0))
+
+    screen.blit(mmenu, (0, 0))
+
+    for event in pygame.event.get():
+        # levelupp = True
+        # QUITTING FUNC
+        if event.type == pygame.QUIT:
+            running = False
+
+        # PRESS KEY
+        if event.type == pygame.KEYDOWN:
+            if event.key != pygame.K_LEFT and event.key != pygame.K_UP and event.key != pygame.K_RIGHT:
+                mixer.music.load("button-click-sound-effect.mp3")
+                mixer.music.play(1)
+            if mainmenut == True:
+                count = 0
+            if event.key == pygame.K_h:
+                playeralive = False
+                playerimg = pygame.image.load("battleship.png")
+                screen.blit(howto, (0, 0))
+                mmenu = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+
+            if event.key == pygame.K_SPACE or event.key == pygame.K_c:
+                # mixer.music.load("background.wav")
+                # mixer.music.play(-1)
+
+                screen.fill((0, 0, 0))
+                mainmenut = False
+                playeralive = True
+                mmenu = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+                playerimg = pygame.image.load("battleship.png")
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                lives_value = 3
+                alienimg = pygame.image.load("Space_invaders_alien.png")
+                alienimg2 = pygame.image.load(
+                    "imgonline-com-ua-resize-adHccGHC44bilP4c.jpg")
+                alienimg23 = pygame.image.load("imgonline-com-ua-resize-MwF3VOmyIsC72.jpg")
+                satimg = pygame.image.load("satellite.png")
+                # mainmenut = False
+            if playeralive == True:
+                # LEFT RIGHT MOTION
+                if event.key == pygame.K_LEFT:
+                    playerx_change = -pspeed
+                if event.key == pygame.K_RIGHT:
+                    playerx_change = pspeed
+                if event.key == pygame.K_UP:
+                    if laser_fire == "ready":
+                        mixer.music.load("laser (1).wav")
+                        mixer.music.play(1)
+                        laser_x = player_x
+                        fire(laser_x, laser_y)
+                    else:
+                        break
+            if lives_value <= 0:
+                if event.key == pygame.K_SPACE:
+                    playeralive = True
+                    playerimg = pygame.image.load("battleship.png")
+                    alien_x = 100
+                    alien_y = 0
+                    alien_x2 = 300
+                    alien_y2 = 0
+                    alien_x23 = 500
+                    alien_y23 = 0
+                    lives_value = 3
+                    alienimg = pygame.image.load("Space_invaders_alien.png")
+                    alienimg2 = pygame.image.load(
+                        "imgonline-com-ua-resize-adHccGHC44bilP4c.jpg")
+                    alienimg23 = pygame.image.load(
+                        "imgonline-com-ua-resize-MwF3VOmyIsC72.jpg")
+                    satimg = pygame.image.load("satellite.png")
+
+            if event.key == pygame.K_q:
+                running = False
+
+        # KEY RELEASE
+        if event.type == pygame.KEYUP:
+            if playeralive is True:
+                if event.key != pygame.K_UP:
+                    playerx_change = 0
+        # IF ALIEN TOUCHES SPACESHIP
+
+        # playerimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        # alienimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        # satimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+
+        # PLAYER BOUNDS
+    player_x += playerx_change
+
+    if player_x <= 50:
+        player_x = 50
+    elif player_x >= 1080:
+        player_x = 1080
+
+    # ALIEN BOUNDS
+
+    alien_x += alienx_change
+    alien_y += alieny_change
+    alieny_change = 0
+
+    if alien_x <= 20:
+        alienx_change = aspeed
+        alieny_change = 90
+    elif alien_x >= 1100:
+        alienx_change = -aspeed
+        alieny_change = 90
+
+        #     ALIEN AND LASER COLLISION DETECTION
+
+    collision = isCollision(alien_x, alien_y, laser_x, laser_y)
+
+    if collision:
+        if laser_fire == "fire":
+            mixer.music.load("explosion.wav")
+            mixer.music.play(1)
+            alienimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+            screen.blit(explosion, (alien_x, alien_y))
+            screen.blit(playerimg, (player_x, player_y))
+            screen.blit(playerimg, (player_x, player_y))
+            screen.blit(alienimg, (alien_x, alien_y))
+            screen.blit(alienimg2, (alien_x2, alien_y2))
+            screen.blit(alienimg23, (alien_x23, alien_y23))
+            screen.blit(alienimg2, (alien_x2, alien_y2))
+            alienimg = pygame.image.load("Space_invaders_alien.png")
+            pygame.display.update()
+            time.sleep(0.5)
+            laser_y = 580
+            laser_fire = "ready"
+            score_value += 1
+            alien_x = 20
+            alien_y = 0
+
+    if alien_y >= 585 and alien_x <= player_x:  # alien_y >= player_y and (alien_x <= player_x or alien_x >= player_x):
+        mixer.music.load("explosion.wav")
+        mixer.music.play(1)
+        player_y = 675
+        player_x = player_x
+        playeralive = False
+        playerimg = pygame.image.load("explosion.png")
+        screen.blit(playerimg, (player_x, player_y))
+        screen.blit(alienimg, (alien_x, alien_y))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        screen.blit(alienimg23, (alien_x23, alien_y23))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        screen.blit(satimg, (sat_x, sat_y))
+
+        pygame.display.update()
+        time.sleep(0.3)
+        loselife()
+        pygame.display.update()
+        time.sleep(0.7)
+        playeralive = True
+        lives_value -= 1
+        playerimg = pygame.image.load("battleship.png")
+        pygame.display.update()
+        alien_x = 100
+        alien_y = 0
+        alien_x2 = 300
+        alien_y2 = 0
+        alien_x23 = 500
+        alien_y23 = 0
+
+    #   ALIEN2 BOUNDS
+
+    alien_x2 += alienx_change2
+    alien_y2 += alieny_change2
+    alieny_change2 = 0
+    if alien_x2 <= 20:
+        alienx_change2 = aspeed2
+        alieny_change2 = 90
+    elif alien_x2 >= 1100:
+        alienx_change2 = -aspeed2
+        alieny_change2 = 90
+
+    collision2 = isCollision(alien_x2, alien_y2, laser_x, laser_y)
+
+    if collision2:
+        if laser_fire == "fire":
+            mixer.music.load("explosion.wav")
+            mixer.music.play(1)
+            alienimg2 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+            screen.blit(explosion, (alien_x2, alien_y2))
+            screen.blit(playerimg, (player_x, player_y))
+            screen.blit(alienimg, (alien_x, alien_y))
+            screen.blit(alienimg2, (alien_x2, alien_y2))
+            screen.blit(alienimg23, (alien_x23, alien_y23))
+            screen.blit(satimg, (sat_x, sat_y))
+
+            pygame.display.update()
+            time.sleep(0.5)
+            laser_y = 580
+            laser_fire = "ready"
+            score_value += 1
+            alien_x2 = 20
+            alien_y2 = 0
+            alienimg2 = pygame.image.load("imgonline-com-ua-resize-adHccGHC44bilP4c.jpg")
+            pygame.display.update()
+
+    if alien_y2 >= 585 and alien_x <= player_x:  # alien_y2 >= player_y and (alien_x2 <= player_x or alien_x2 >= player_x):
+        mixer.music.load("explosion.wav")
+        mixer.music.play(1)
+        player_y = 675
+        player_x = player_x
+        playeralive = False
+        playerimg = pygame.image.load("explosion.png")
+        screen.blit(playerimg, (player_x, player_y))
+        screen.blit(alienimg, (alien_x, alien_y))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        screen.blit(alienimg23, (alien_x23, alien_y23))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        pygame.display.update()
+        time.sleep(0.3)
+        loselife()
+        pygame.display.update()
+        time.sleep(0.7)
+        playeralive = True
+        lives_value -= 1
+        playerimg = pygame.image.load("battleship.png")
+        pygame.display.update()
+        alien_x = 100
+        alien_y = 0
+        alien_x2 = 300
+        alien_y2 = 0
+        alien_x23 = 500
+        alien_y23 = 0
+
+    #   ALIEN23 BOUNDS
+
+    alien_x23 += alienx_change23
+    alien_y23 += alieny_change23
+    alieny_change23 = 0
+    if alien_x23 <= 20:
+        alienx_change23 = aspeed2
+        alieny_change23 = 90
+    elif alien_x23 >= 1100:
+        alienx_change23 = -aspeed2
+        alieny_change23 = 90
+
+    collision23 = isCollision(alien_x23, alien_y23, laser_x, laser_y)
+
+    if collision23:
+        if laser_fire == "fire":
+            mixer.music.load("explosion.wav")
+            mixer.music.play(1)
+            player_y = 675
+            player_x = player_x
+            alienimg23 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+            screen.blit(explosion, (alien_x23, alien_y23))
+            screen.blit(playerimg, (player_x, player_y))
+            screen.blit(alienimg, (alien_x, alien_y))
+            screen.blit(alienimg2, (alien_x2, alien_y2))
+            screen.blit(alienimg23, (alien_x23, alien_y23))
+            screen.blit(satimg, (sat_x, sat_y))
+            alienimg23 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+            pygame.display.update()
+            time.sleep(0.5)
+            laser_y = 580
+            laser_fire = "ready"
+            score_value += 1
+            alien_x23 = 20
+            alien_y23 = 0
+            alienimg23 = pygame.image.load("imgonline-com-ua-resize-MwF3VOmyIsC72.jpg")
+            pygame.display.update()
+
+    if alien_y23 >= 585 and alien_x <= player_x:
+        mixer.music.load("explosion.wav")
+        mixer.music.play(1)
+        player_y = 675
+        player_x = player_x
+        playeralive = False
+        playerimg = pygame.image.load("explosion.png")
+        screen.blit(playerimg, (player_x, player_y))
+        screen.blit(alienimg, (alien_x, alien_y))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        screen.blit(alienimg23, (alien_x23, alien_y23))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        pygame.display.update()
+        time.sleep(0.3)
+        loselife()
+        pygame.display.update()
+        time.sleep(0.7)
+        playeralive = True
+        lives_value -= 1
+        playerimg = pygame.image.load("battleship.png")
+        pygame.display.update()
+        alien_x = 100
+        alien_y = 0
+        alien_x2 = 300
+        alien_y2 = 0
+        alien_x23 = 500
+        alien_y23 = 0
+
+    # sat bds
+    if playeralive == True:
+        if sat_y >= random.randint(1400, 2000) or sat_x <= random.randint(-1000, -400) or sat_x >= random.randint(1600,
+                                                                                                                  2200):
+            chooser = random.randint(1, 2)
+            if chooser == 1:
+                sat_x = -64
+                sspeed = random.randint(1, 1)
+            else:
+                sat_x = 1130
+                sspeed = random.randint(-1, -1)
+            sat_y = random.randint(150, 450)
+
+            satx_change = sspeed
+            choosey = random.randint(-3, 1)
+
+            saty_change = choosey / 10
+
+    # BULLET BOUNDS
+    if laser_y <= -100:
+        laser_y = 580
+        laser_fire = "ready"
+
+    if laser_fire == "fire":
+        fire(laser_x, laser_y)
+        laser_y -= lasery_change
+
+    #    LASER AND SAT COLLISION DETECTION
+
+    collisionsat = isCollisionsat(sat_x, sat_y, laser_x, laser_y)
+    if collisionsat is True:
+        mixer.music.load("explosion.wav")
+        mixer.music.play(1)
+        screen.blit(blast, (sat_x, sat_y))
+        screen.blit(playerimg, (player_x, player_y))
+        screen.blit(alienimg, (alien_x, alien_y))
+        screen.blit(alienimg2, (alien_x2, alien_y2))
+        screen.blit(alienimg23, (alien_x23, alien_y23))
+        laserimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        pygame.display.update()
+        time.sleep(0.39)
+        loselife()
+        pygame.display.update()
+        time.sleep(0.5)
+        lives_value -= 1
+        time.sleep(0.5)
+        laserimg = pygame.image.load("laser.png")
+
+        if laser_fire == "fire":
+            chooser = random.randint(1, 2)
+            if chooser == 1:
+                sat_x = -64
+                sspeed = random.randint(1, 1)
+            else:
+                sat_x = 1130
+                sspeed = random.randint(-1, -1)
+            sat_y = random.randint(150, 450)
+
+            satx_change = sspeed
+            choosey = random.randint(-3, 1)
+
+            saty_change = choosey / 10
+
+            laser_fire = "ready"
+    if lives_value <= 0:
+        player_x = player_x
+        playeralive = False
+        playerimg = pygame.image.load("explosion.png")
+        game_over_text()
+
+        score_value = 0
+        level_value = 0
+        screen.blit(playerimg, (player_x, player_y))
+        satimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        alienimg = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        alienimg2 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        alienimg23 = pygame.image.load("Screen Shot 2021-03-29 at 10.22.20 PM.png")
+        pygame.display.update()
+        alien_x = 100
+        alien_y = 0
+        alien_x2 = 300
+        alien_y2 = 0
+        alien_x23 = 500
+        alien_y23 = 0
+        player_y = 675
+        count += 1
+
+    # LEVEL UP
+
+    scorelst = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+    if playeralive == True:
+        if score_value == 10:
+            if count == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+                count = 1
+
+        if score_value == 20:
+            if count1 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count1 = 1
+
+        if score_value == 30:
+            if count2 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count2 = 1
+        if score_value == 40:
+            if count3 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count3 = 1
+        if score_value == 50:
+            if count4 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count4 = 1
+        if score_value == 60:
+            if count5 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count5 = 1
+        if score_value == 70:
+            if count6 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count6 = 1
+        if score_value == 80:
+            if count7 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count7 = 1
+        if score_value == 90:
+            if count8 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count8 = 1
+        if score_value == 100:
+            if count9 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count9 = 1
+        if score_value == 110:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count10 = 1
+        if score_value == 120:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count11 = 1
+        if score_value == 130:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count12 = 1
+        if score_value == 140:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count13 = 1
+        if score_value == 115:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count14 = 1
+        if score_value == 160:
+            if count10 == 0:
+                mixer.music.load("level_up.mp3")
+                mixer.music.play(1)
+                alien_x = 100
+                alien_y = 0
+                alien_x2 = 300
+                alien_y2 = 0
+                alien_x23 = 500
+                alien_y23 = 0
+                levelup()
+                level_value += 1
+                pygame.display.update()
+                time.sleep(0.7)
+
+                count15 = 1
+
+    sat_x += satx_change
+    sat_y += saty_change
+
+    player(player_x, player_y)
+    alien(alien_x, alien_y)
+    alien2(alien_x2, alien_y2)
+    alien3(alien_x23, alien_y23)
+    if playeralive == True:
+        showscore_value(textx, texty)
+        level(leveltxtx, leveltxty)
+        showlives(livesx, livesy)
+    sat(sat_x, sat_y)
+    pygame.display.update()
